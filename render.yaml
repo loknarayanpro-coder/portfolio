@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: lok-narayan-portfolio
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASSWORD
+        sync: false
+      - key: EMAIL_TO
+        value: mloknarayan@gmail.com
+      - key: ADMIN_KEY
+        sync: false
