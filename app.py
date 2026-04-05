@@ -6,6 +6,10 @@ from email.mime.multipart import MIMEMultipart
 import os
 import json
 from datetime import datetime
+from dotenv import load_dotenv
+from supabase import create_client, Client
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
@@ -16,28 +20,56 @@ EMAIL_USER     = os.environ.get("EMAIL_USER", "")        # your gmail
 EMAIL_PASSWORD = os.environ.get("EMAIL_PASSWORD", "")    # app password
 EMAIL_TO       = os.environ.get("EMAIL_TO", "loknarayanpro@gmail.com")
 
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
+
+if SUPABASE_URL and SUPABASE_KEY:
+    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+else:
+    supabase = None
+
 MESSAGES_FILE = "messages.json"
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 def load_messages():
-    if os.path.exists(MESSAGES_FILE):
-        with open(MESSAGES_FILE, "r") as f:
-            return json.load(f)
-    return []
+    if supabase:
+        try:
+            response = supabase.table("messages").select("*").execute()
+            return response.data
+        except Exception as e:
+            print(f"Supabase error: {e}")
+            return []
+    else:
+        if os.path.exists(MESSAGES_FILE):
+            with open(MESSAGES_FILE, "r") as f:
+                return json.load(f)
+        return []
 
 def save_message(data):
-    messages = load_messages()
-    messages.append({
-        "id": len(messages) + 1,
-        "name": data.get("name"),
-        "email": data.get("email"),
-        "subject": data.get("subject", "No Subject"),
-        "service": data.get("service", ""),
-        "message": data.get("message"),
-        "timestamp": datetime.now().isoformat()
-    })
-    with open(MESSAGES_FILE, "w") as f:
-        json.dump(messages, f, indent=2)
+    if supabase:
+        try:
+            supabase.table("messages").insert({
+                "name": data.get("name"),
+                "email": data.get("email"),
+                "subject": data.get("subject", "No Subject"),
+                "service": data.get("service", ""),
+                "message": data.get("message")
+            }).execute()
+        except Exception as e:
+            print(f"Supabase insert error: {e}")
+    else:
+        messages = load_messages()
+        messages.append({
+            "id": len(messages) + 1,
+            "name": data.get("name"),
+            "email": data.get("email"),
+            "subject": data.get("subject", "No Subject"),
+            "service": data.get("service", ""),
+            "message": data.get("message"),
+            "timestamp": datetime.now().isoformat()
+        })
+        with open(MESSAGES_FILE, "w") as f:
+            json.dump(messages, f, indent=2)
 
 def send_email(data):
     if not EMAIL_USER or not EMAIL_PASSWORD:
