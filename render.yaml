@@ -13,5 +13,7 @@ services:
         sync: false
       - key: EMAIL_TO
         value: mloknarayan@gmail.com
-      - key: ADMIN_KEY
-        sync: false
+      - key: SUPABASE_URL
+        value: https://kqutysupddfqcofmblsm.supabase.co
+      - key: SUPABASE_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxdXR5c3VwZGRmcWNvZm1ibHNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MDM1NzUsImV4cCI6MjA5MDk3OTU3NX0.oiQCKD2BOwh93VYZkqpywTdo65o6y3sqAdgNMvsks7s
